@@ -220,6 +220,7 @@ function Root() {
 							name={"name"}
 							placeholder={"Journal Name"}
 							defaultValue={activeJournal ? activeJournal.name : ""}
+							size={"lg"}
 						/>
 						<Group justify={"space-between"}>
 							<Button

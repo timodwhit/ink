@@ -51,7 +51,7 @@ export function Entry({ entry }: Props) {
 									title={"See Options"}
 									onClick={() => setOpened((o) => !o)}
 								>
-									<IconDots size={"xs"} />
+									<IconDots />
 								</ActionIcon>
 							</Popover.Target>
 							<Popover.Dropdown>
@@ -68,6 +68,7 @@ export function Entry({ entry }: Props) {
 													? "Close editing without saving"
 													: "Edit Entry"
 											}
+											size={"xs"}
 										>
 											{editActive ? <IconX /> : <IconSettings />}
 										</ActionIcon>
@@ -82,6 +83,7 @@ export function Entry({ entry }: Props) {
 													);
 													setOpened((o) => !o);
 												}}
+												size={"xs"}
 												title={"Delete Entry"}
 											>
 												<IconDownload />
@@ -92,6 +94,7 @@ export function Entry({ entry }: Props) {
 													setEditActive((e) => !e);
 												}}
 												title={"Edit Entry"}
+												size={"xs"}
 											>
 												{editActive ? <IconX /> : <IconSettings />}
 											</ActionIcon>
@@ -102,6 +105,7 @@ export function Entry({ entry }: Props) {
 													setOpened((o) => !o);
 												}}
 												title={"Delete Entry"}
+												size={"xs"}
 											>
 												<IconTrash />
 											</ActionIcon>
@@ -129,7 +133,7 @@ export function Entry({ entry }: Props) {
 						}}
 					/>
 				) : (
-					<Text>{entry.entry}</Text>
+					<Text size={"lg"}>{entry.entry}</Text>
 				)}
 			</Flex>
 			{confirmDeleteOpened && (
