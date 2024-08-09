@@ -9,7 +9,7 @@ export interface IJournal {
 	size: "small" | "medium" | "large";
 }
 
-export async function getJournals() {
+export async function getJournals(): Promise<IJournal[]> {
 	return (await localforage.getItem("journals")) ?? [];
 }
 export async function createJournal(
@@ -31,8 +31,7 @@ export async function createJournal(
 
 export async function getJournal(id: string) {
 	const journals = await getJournals();
-	const journal = journals.find((journal) => journal.id === id);
-	return journal ?? null;
+	return journals.find((journal) => journal.id === id);
 }
 
 export async function updateJournal(id: string, updates) {
@@ -48,7 +47,7 @@ export async function updateJournal(id: string, updates) {
 }
 
 export async function deleteJournal(id: string) {
-	const journals = await localforage.getItem("journals");
+	const journals = await getJournals();
 	const index = journals.findIndex((contact) => contact.id === id);
 	if (index > -1) {
 		journals.splice(index, 1);
@@ -62,6 +61,6 @@ export async function deleteJournal(id: string) {
 	return false;
 }
 
-function setJournals(journals) {
+function setJournals(journals: IJournal[]) {
 	return localforage.setItem("journals", journals);
 }

@@ -1,10 +1,10 @@
-import { Anchor, Container, List, useComputedColorScheme } from "@mantine/core";
+import { Anchor, Container, List } from "@mantine/core";
 import { IconBook } from "@tabler/icons-react";
 import { Link, useLoaderData } from "react-router-dom";
+import type { RootLoaderData } from "./root.tsx";
 
 export default function Index() {
-	const { journals } = useLoaderData();
-	const computedColorScheme = useComputedColorScheme("light");
+	const { journals } = useLoaderData() as RootLoaderData;
 	return (
 		<Container size="xs">
 			{journals.length > 0 ? (

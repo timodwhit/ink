@@ -1,7 +1,14 @@
 import { Button, Text } from "@mantine/core";
 import { Form } from "react-router-dom";
+import type { IJournal } from "../helpers/journals.ts";
 
-export function JournalDeleteForm({ journal, onSubmit, onCancel }) {
+interface Props {
+	journal: IJournal;
+	onSubmit: () => void;
+	onCancel: () => void;
+}
+
+export function JournalDeleteForm({ journal, onSubmit, onCancel }: Props) {
 	return (
 		<Form
 			method={"delete"}

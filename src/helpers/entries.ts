@@ -17,7 +17,7 @@ export async function getEntriesByJournal(
 	journalId: string,
 ): Promise<IJournalEntry[]> {
 	const allEntries = (await getAllEntries()) ?? {};
-	const journalEntries = [];
+	const journalEntries: IJournalEntry[] = [];
 	//Note: This array generation is temporary, until a real database comes into the picture.
 	for (const [, entry] of allEntries) {
 		if (entry.journalId === journalId) {
@@ -69,6 +69,6 @@ export async function deleteEntry(id: string) {
 	return false;
 }
 
-function setEntries(entries) {
+function setEntries(entries: Map<string, IJournalEntry>) {
 	return localforage.setItem("entries", entries);
 }

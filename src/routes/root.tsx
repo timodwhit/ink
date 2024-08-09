@@ -1,4 +1,5 @@
 import {
+	type ActionFunctionArgs,
 	Form,
 	Link,
 	Outlet,
@@ -69,14 +70,18 @@ const theme = createTheme({
 	},
 });
 
-async function loader() {
+export type RootLoaderData = {
+	journals: IJournal[];
+};
+
+async function loader(): Promise<RootLoaderData> {
 	const journals = await getJournals();
 	return { journals };
 }
 
-export async function action({ request }) {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData();
-	const name = formData.get("name");
+	const name = formData.get("name") as string;
 	const journal = await createJournal(name, "small");
 	return redirect(`journal/${journal.id}`);
 }
@@ -125,12 +130,11 @@ function Root() {
 		deleteJournalOpened,
 		{ open: openDeleteModal, close: closeDeleteModal },
 	] = useDisclosure(false);
-	const [opened, { toggle: toggleMenu, open: openMenu, close: closeMenu }] =
-		useDisclosure();
+	const [opened, { toggle: toggleMenu, close: closeMenu }] = useDisclosure();
 	const [activeJournal, setActiveJournal] = useState<IJournal | null>(null);
-	const { journals } = useLoaderData();
+	const { journals } = useLoaderData() as RootLoaderData;
 
-	const items = journals.map((item, index) => (
+	const items = journals.map((item) => (
 		<Flex key={item.id} align={"center"}>
 			<NavLink
 				label={item.name}
@@ -205,7 +209,7 @@ function Root() {
 					}
 				>
 					<Form
-						method={"post"}
+						method={activeJournal ? "patch" : "post"}
 						onSubmit={() => {
 							close();
 							setActiveJournal(null);

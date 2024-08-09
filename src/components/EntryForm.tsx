@@ -5,12 +5,12 @@ import { useFetcher } from "react-router-dom";
 import type { IJournalEntry } from "../helpers/entries.ts";
 
 interface Props {
-	entry: IJournalEntry;
+	entry: IJournalEntry | null;
 	text: string;
 	setText: Dispatch<string>;
 	focusMode: boolean;
-	openModal: boolean;
-	closeModal: boolean;
+	openModal: () => void;
+	closeModal: () => void;
 	onSubmit?: () => void;
 }
 
@@ -22,7 +22,7 @@ export function EntryForm({
 	openModal,
 	closeModal,
 	onSubmit,
-}) {
+}: Props) {
 	const fetcher = useFetcher();
 	const inputRef = useRef(null);
 
@@ -39,6 +39,7 @@ export function EntryForm({
 		if (fetcher.state === "idle") {
 			// On submit, change the focus back to the main form.
 			if (!focusMode) {
+				// @ts-expect-error
 				inputRef.current.focus();
 			}
 		}

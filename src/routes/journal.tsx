@@ -1,24 +1,44 @@
 import { Container, Stack, Text } from "@mantine/core";
 import { useEffect, useRef } from "react";
-import { redirect, useLoaderData } from "react-router-dom";
+import {
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	redirect,
+	useLoaderData,
+} from "react-router-dom";
 import { Entry } from "../components/Entry.tsx";
 import { EntryFormWrapper } from "../components/EntryFormWrapper.tsx";
 import {
+	type IJournalEntry,
 	createEntry,
 	deleteEntry,
 	getEntriesByJournal,
 	updateEntry,
 } from "../helpers/entries.ts";
 import {
+	type IJournal,
 	deleteJournal,
 	getJournal,
 	updateJournal,
 } from "../helpers/journals.ts";
 
-export async function journalRootLoader({ params }) {
+type JournalRootLoaderData = {
+	journal: IJournal;
+	entries: IJournalEntry[];
+};
+
+export async function journalRootLoader({
+	params,
+}: LoaderFunctionArgs): Promise<JournalRootLoaderData> {
+	if (!params.journalId) {
+		throw new Response("", {
+			status: 400,
+			statusText: "Missing journal id to load.",
+		});
+	}
 	const journal = await getJournal(params.journalId);
 	const entries = await getEntriesByJournal(params.journalId);
-	if (!entries) {
+	if (!entries || journal === undefined) {
 		throw new Response("", {
 			status: 404,
 			statusText: "Not Found",
@@ -37,45 +57,64 @@ export async function journalRootLoader({ params }) {
 	return { journal, entries };
 }
 
-export async function journalRootAction({ request, params }) {
+export async function journalRootAction({
+	request,
+	params,
+}: ActionFunctionArgs) {
 	const formData = await request.formData();
-	const entry = formData.get("entry");
-	await createEntry(params.journalId, entry);
+	const entry = formData.get("entry") as string;
+	if (params.journalId) {
+		await createEntry(params.journalId, entry);
+	}
 	return { saved: true };
 }
 
-export async function journalEditAction({ request, params }) {
+export async function journalEditAction({
+	request,
+	params,
+}: ActionFunctionArgs) {
 	const formData = await request.formData();
 	const name = formData.get("name");
-	await updateJournal(params.journalId, { name });
-	return redirect(`/journal/${params.journalId}`);
+	if (request.method === "PATCH" && params.journalId) {
+		await updateJournal(params.journalId, { name });
+		return redirect(`/journal/${params.journalId}`);
+	}
 }
-export async function journalDeleteAction({ request, params }) {
-	if (request.method === "DELETE") {
-		console.log(params.journalId);
+export async function journalDeleteAction({
+	request,
+	params,
+}: ActionFunctionArgs) {
+	if (request.method === "DELETE" && params.journalId) {
 		await deleteJournal(params.journalId);
 		return redirect("/");
 	}
 }
 
-export async function entryEditAction({ request, params }) {
+export async function entryEditAction({ request, params }: ActionFunctionArgs) {
 	const formData = await request.formData();
 	const entry = formData.get("entry");
-	await updateEntry(params.entryId, { entry });
-	return { saved: true };
+	if (params.entryId) {
+		await updateEntry(params.entryId, { entry });
+		return { saved: true };
+	}
 }
-export async function entryDeleteAction({ request, params }) {
-	await deleteEntry(params.entryId);
-	return { saved: true };
+export async function entryDeleteAction({ params }: ActionFunctionArgs) {
+	if (params.entryId) {
+		await deleteEntry(params.entryId);
+		return { saved: true };
+	}
 }
 
 export default function Journal() {
-	const { journal, entries } = useLoaderData();
+	const { journal, entries } = useLoaderData() as JournalRootLoaderData;
 	const stackRef = useRef(null);
 
 	useEffect(() => {
-		// Load to the most recent every time.
-		stackRef.current.scrollTop = stackRef.current.scrollHeight;
+		if (stackRef.current) {
+			// Load to the most recent every time.
+			// @ts-expect-error TODO: Resolve this correctly. It was just a PITA at the time of seeing it.
+			stackRef.current.scrollTop = stackRef.current.scrollHeight;
+		}
 	}, []);
 
 	return (
@@ -95,7 +134,7 @@ export default function Journal() {
 								Entries from <strong>{journal.name}</strong>
 							</Text>
 							{entries.map((entry) => (
-								<Entry key={entry.id} entry={entry} inStream={true} />
+								<Entry key={entry.id} entry={entry} />
 							))}
 						</Container>
 					) : (
