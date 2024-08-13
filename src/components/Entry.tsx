@@ -13,7 +13,6 @@ import {
   IconDownload,
   IconSettings,
   IconTrash,
-  IconX,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import type { IJournalEntry } from "../helpers/entries.ts";
@@ -56,61 +55,41 @@ export function Entry({ entry }: Props) {
               </Popover.Target>
               <Popover.Dropdown>
                 <Group gap={"xs"}>
-                  {editActive ? (
-                    <ActionIcon
-                      variant={"subtle"}
-                      onClick={() => {
-                        setOpened((o) => !o);
-                        setEditActive((e) => !e);
-                      }}
-                      title={
-                        editActive
-                          ? "Close editing without saving"
-                          : "Edit Entry"
-                      }
-                      size={"xs"}
-                    >
-                      {editActive ? <IconX /> : <IconSettings />}
-                    </ActionIcon>
-                  ) : (
-                    <>
-                      <ActionIcon
-                        variant={"subtle"}
-                        onClick={() => {
-                          saveToFile(
-                            `entry_${entry.created_date.toISOString()}.txt`,
-                            entry.entry,
-                          );
-                          setOpened((o) => !o);
-                        }}
-                        size={"xs"}
-                        title={"Delete Entry"}
-                      >
-                        <IconDownload />
-                      </ActionIcon>
-                      <ActionIcon
-                        variant={"subtle"}
-                        onClick={() => {
-                          setEditActive((e) => !e);
-                        }}
-                        title={"Edit Entry"}
-                        size={"xs"}
-                      >
-                        {editActive ? <IconX /> : <IconSettings />}
-                      </ActionIcon>
-                      <ActionIcon
-                        variant={"subtle"}
-                        onClick={() => {
-                          open();
-                          setOpened((o) => !o);
-                        }}
-                        title={"Delete Entry"}
-                        size={"xs"}
-                      >
-                        <IconTrash />
-                      </ActionIcon>
-                    </>
-                  )}
+                  <ActionIcon
+                    variant={"subtle"}
+                    onClick={() => {
+                      saveToFile(
+                        `entry_${entry.created_date.toISOString()}.txt`,
+                        entry.entry,
+                      );
+                      setOpened((o) => !o);
+                    }}
+                    size={"xs"}
+                    title={"Delete Entry"}
+                  >
+                    <IconDownload />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant={"subtle"}
+                    onClick={() => {
+                      setEditActive(true);
+                    }}
+                    title={"Edit Entry"}
+                    size={"xs"}
+                  >
+                    <IconSettings />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant={"subtle"}
+                    onClick={() => {
+                      open();
+                      setOpened((o) => !o);
+                    }}
+                    title={"Delete Entry"}
+                    size={"xs"}
+                  >
+                    <IconTrash />
+                  </ActionIcon>
                 </Group>
               </Popover.Dropdown>
             </Popover>
@@ -131,9 +110,14 @@ export function Entry({ entry }: Props) {
             onSubmit={() => {
               setEditActive(false);
             }}
+            forceConfirm={true}
           />
         ) : (
-          <Text size={"lg"} onClick={() => setEditActive(true)}>
+          <Text
+            size={"lg"}
+            style={{ width: "100%" }}
+            onClick={() => setEditActive(true)}
+          >
             {entry.entry}
           </Text>
         )}
@@ -144,6 +128,7 @@ export function Entry({ entry }: Props) {
           onClose={() => {
             close();
           }}
+          title={"Are you sure?"}
         >
           <EntryDeleteForm entry={entry} onCancel={close} />
         </Modal>

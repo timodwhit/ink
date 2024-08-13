@@ -7,9 +7,10 @@ import { EntryForm } from "./EntryForm.tsx";
 interface Props {
   entry: IJournalEntry | null;
   onSubmit?: () => void;
+  forceConfirm: boolean;
 }
 
-export function EntryFormWrapper({ entry, onSubmit }: Props) {
+export function EntryFormWrapper({ entry, onSubmit, forceConfirm }: Props) {
   const [text, setText] = useState(entry ? entry.entry : "");
   const [focusMode, { open, close }] = useDisclosure(false);
 
@@ -21,9 +22,10 @@ export function EntryFormWrapper({ entry, onSubmit }: Props) {
           text={text}
           setText={setText}
           focusMode={false}
-          openModal={open}
-          closeModal={close}
+          openFocusMode={open}
+          closeFocusMode={close}
           onSubmit={onSubmit}
+          confirm={forceConfirm}
         />
       </Container>
       <Modal
@@ -39,9 +41,10 @@ export function EntryFormWrapper({ entry, onSubmit }: Props) {
             text={text}
             setText={setText}
             focusMode={true}
-            openModal={open}
-            closeModal={close}
+            openFocusMode={open}
+            closeFocusMode={close}
             onSubmit={onSubmit}
+            confirm={forceConfirm}
           />
         </Container>
       </Modal>
