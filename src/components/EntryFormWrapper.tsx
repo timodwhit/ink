@@ -16,7 +16,7 @@ export function EntryFormWrapper({ entry, onSubmit, forceConfirm }: Props) {
 
   return (
     <>
-      <Container size={"xs"} style={{ width: "100%" }}>
+      <Container size={"xs"} style={{ width: "100%" }} p={0}>
         <EntryForm
           entry={entry}
           text={text}
