@@ -143,7 +143,7 @@ export default function Journal() {
             </Text>
           )}
         </div>
-        <EntryFormWrapper entry={null} />
+        <EntryFormWrapper entry={null} forceConfirm={false} />
       </Stack>
     </div>
   );
