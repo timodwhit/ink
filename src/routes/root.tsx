@@ -1,6 +1,5 @@
 import {
 	type ActionFunctionArgs,
-	Form,
 	Link,
 	Outlet,
 	type RouteObject,
@@ -16,14 +15,11 @@ import {
 	AppShell,
 	Box,
 	Burger,
-	Button,
 	ColorSchemeScript,
 	Flex,
 	Group,
 	MantineProvider,
-	Modal,
 	NavLink,
-	TextInput,
 	createTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -35,7 +31,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import DarkModeToggle from "../components/DarkModeToggle.tsx";
-import { JournalDeleteForm } from "../components/JournalDeleteForm.tsx";
+import { JournalEditModals } from "../components/JournalEditModals.tsx";
 import {
 	type IJournal,
 	createJournal,
@@ -125,10 +121,9 @@ export const route: RouteObject = {
 };
 
 function Root() {
-	const [createJournalOpened, { open, close }] = useDisclosure(false);
 	const [
-		deleteJournalOpened,
-		{ open: openDeleteModal, close: closeDeleteModal },
+		openedJournalEdits,
+		{ open: openJournalEdits, close: closeJournalEdits },
 	] = useDisclosure(false);
 	const [opened, { toggle: toggleMenu, close: closeMenu }] = useDisclosure();
 	const [activeJournal, setActiveJournal] = useState<IJournal | null>(null);
@@ -151,7 +146,6 @@ function Root() {
 				aria-label={`Edit ${item.name}`}
 				onClick={() => {
 					setActiveJournal(item);
-					open();
 				}}
 				size={18}
 			>
@@ -188,83 +182,20 @@ function Root() {
 							label={"Create New Journal"}
 							leftSection={<IconPlus />}
 							variant={"subtle"}
-							onClick={open}
+							onClick={openJournalEdits}
 						/>
 						{items}
 					</AppShell.Navbar>
 					<AppShell.Main>
 						<Outlet />
 					</AppShell.Main>
+					<JournalEditModals
+						opened={openedJournalEdits}
+						close={closeJournalEdits}
+						journal={activeJournal}
+						setJournal={setActiveJournal}
+					/>
 				</AppShell>
-				<Modal
-					opened={createJournalOpened}
-					onClose={() => {
-						close();
-						setActiveJournal(null);
-					}}
-					title={
-						activeJournal
-							? `Update ${activeJournal.name}`
-							: "Create New Journal"
-					}
-				>
-					<Form
-						method={activeJournal ? "patch" : "post"}
-						onSubmit={() => {
-							close();
-							setActiveJournal(null);
-						}}
-						action={activeJournal ? `/journal/${activeJournal.id}/edit` : "/"}
-					>
-						<TextInput
-							name={"name"}
-							placeholder={"Journal Name"}
-							defaultValue={activeJournal ? activeJournal.name : ""}
-							size={"lg"}
-						/>
-						<Group justify={"space-between"}>
-							<Button
-								type={"submit"}
-								value={activeJournal ? "Update" : "Create"}
-								mt={"md"}
-							>
-								{activeJournal ? "Update" : "Create"}
-							</Button>
-							{activeJournal && (
-								<Button
-									variant={"transparent"}
-									value={"Delete"}
-									mt={"md"}
-									onClick={() => {
-										openDeleteModal();
-										close();
-									}}
-								>
-									Delete
-								</Button>
-							)}
-						</Group>
-					</Form>
-				</Modal>
-				{activeJournal && (
-					<Modal
-						opened={deleteJournalOpened}
-						onClose={() => {
-							closeDeleteModal();
-							setActiveJournal(null);
-						}}
-						title={`Delete ${activeJournal.name}`}
-					>
-						<JournalDeleteForm
-							journal={activeJournal}
-							onSubmit={() => {
-								closeDeleteModal();
-								setActiveJournal(null);
-							}}
-							onCancel={closeDeleteModal}
-						/>
-					</Modal>
-				)}
 			</MantineProvider>
 		</>
 	);
