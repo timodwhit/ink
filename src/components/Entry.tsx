@@ -114,7 +114,7 @@ export function Entry({ entry }: Props) {
           />
         ) : (
           <Text
-            size={"lg"}
+            size={"sm"}
             style={{ width: "100%" }}
             onClick={() => setEditActive(true)}
           >
