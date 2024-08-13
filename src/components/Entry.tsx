@@ -133,7 +133,7 @@ export function Entry({ entry }: Props) {
 						}}
 					/>
 				) : (
-					<Text size={"lg"}>{entry.entry}</Text>
+					<Text size={"lg"} onClick={() => setEditActive(true)}>{entry.entry}</Text>
 				)}
 			</Flex>
 			{confirmDeleteOpened && (
