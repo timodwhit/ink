@@ -78,12 +78,7 @@ export function EntryForm({
           }}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          styles={{
-            input: {
-              fontSize: "lg",
-            },
-          }}
-          size={"lg"}
+          size={"md"}
           rightSection={
             <Stack justify={"space-between"} style={{ height: "100%" }}>
               {confirm ? (

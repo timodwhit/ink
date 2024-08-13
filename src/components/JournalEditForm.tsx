@@ -19,7 +19,7 @@ export function JournalEditForm({ journal, onSubmit, onDelete }: Props) {
         name={"name"}
         placeholder={"Journal Name"}
         defaultValue={journal ? journal.name : ""}
-        size={"lg"}
+        size={"md"}
       />
       <Group justify={"space-between"}>
         <Button type={"submit"} value={journal ? "Update" : "Create"} mt={"md"}>
