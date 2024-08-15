@@ -9,7 +9,4 @@ This is meant to be like a pocket journal on your phone. You are meant to see yo
 low and just write.
 
 ### TODO
-- [] Add an actual database (it is all local storage now)
-- [] Add login
-- [] Add E2EE
-- [] Add TipTap support 
+See issue queue. 
