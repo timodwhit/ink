@@ -1,66 +1,66 @@
-import localforage from "localforage";
-import { v4 as uuidv4 } from "uuid";
-import { deleteEntry, getEntriesByJournal } from "./entries.ts";
+import { journalService } from '../services/journalService';
+import { deleteEntry, getEntriesByJournal } from './entries';
 
 export interface IJournal {
   readonly id: string;
-  readonly created_date: Date;
+  readonly created_date: string;
   name: string;
-  size: "small" | "medium" | "large";
+  size: 'small' | 'medium' | 'large';
 }
 
-export async function getJournals(): Promise<IJournal[]> {
-  return (await localforage.getItem("journals")) ?? [];
+export async function getJournals(userId: string): Promise<IJournal[]> {
+  const journals = await journalService.getJournalsByUserId(userId);
+  return journals.map(journal => ({
+    id: journal.id,
+    created_date: journal.created_date,
+    name: journal.name,
+    size: journal.size as 'small' | 'medium' | 'large',
+  }));
 }
+
 export async function createJournal(
   name: string,
-  size: "small" | "medium" | "large",
+  size: 'small' | 'medium' | 'large',
+  userId: string,
 ) {
-  const id = uuidv4();
-  const journal: IJournal = {
-    id,
-    name,
-    created_date: new Date(),
-    size,
+  const journal = await journalService.createJournal({ name, size, userId });
+  return {
+    id: journal.id,
+    created_date: journal.created_date,
+    name: journal.name,
+    size: journal.size as 'small' | 'medium' | 'large',
   };
-  const journals = await getJournals();
-  journals.unshift(journal);
-  await setJournals(journals);
-  return journal;
 }
 
 export async function getJournal(id: string) {
-  const journals = await getJournals();
-  return journals.find((journal) => journal.id === id);
+  const journal = await journalService.getJournalById(id);
+  if (!journal) return undefined;
+
+  return {
+    id: journal.id,
+    created_date: journal.created_date,
+    name: journal.name,
+    size: journal.size as 'small' | 'medium' | 'large',
+  };
 }
 
-export async function updateJournal(id: string, updates) {
-  const journals = await getJournals();
-  const journal = journals.find((journal) => journal.id === id);
-  if (!journal) {
-    throw new Error(`No journal found for ${id}`);
-  }
-  Object.assign(journal, updates);
-  // Save the changes.
-  await setJournals(journals);
-  return journal;
+export async function updateJournal(id: string, updates: { name?: string; size?: 'small' | 'medium' | 'large' }) {
+  const journal = await journalService.updateJournal(id, updates);
+  if (!journal) return null;
+
+  return {
+    id: journal.id,
+    created_date: journal.created_date,
+    name: journal.name,
+    size: journal.size as 'small' | 'medium' | 'large',
+  };
 }
 
 export async function deleteJournal(id: string) {
-  const journals = await getJournals();
-  const index = journals.findIndex((contact) => contact.id === id);
-  if (index > -1) {
-    journals.splice(index, 1);
-    await setJournals(journals);
-    const entries = await getEntriesByJournal(id);
-    for (const entry of entries) {
-      await deleteEntry(entry.id);
-    }
-    return true;
+  const entries = await getEntriesByJournal(id);
+  for (const entry of entries) {
+    await deleteEntry(entry.id);
   }
-  return false;
-}
-
-function setJournals(journals: IJournal[]) {
-  return localforage.setItem("journals", journals);
+  await journalService.deleteJournal(id);
+  return true;
 }

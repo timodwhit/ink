@@ -28,6 +28,9 @@ export function Entry({ entry }: Props) {
   const [editActive, setEditActive] = useState(false);
   const [confirmDeleteOpened, { open, close }] = useDisclosure();
   const [opened, setOpened] = useState(false);
+
+  const createdDate = new Date(entry.created_date);
+
   return (
     <div>
       <Divider
@@ -35,7 +38,7 @@ export function Entry({ entry }: Props) {
         label={
           <Group gap="xs">
             <Text size={"xs"}>
-              {`${entry.created_date.toLocaleDateString()} ${entry.created_date.toLocaleTimeString()}`}
+              {`${createdDate.toLocaleDateString()} ${createdDate.toLocaleTimeString()}`}
             </Text>
             <Popover
               position="top"
@@ -59,13 +62,13 @@ export function Entry({ entry }: Props) {
                     variant={"subtle"}
                     onClick={() => {
                       saveToFile(
-                        `entry_${entry.created_date.toISOString()}.txt`,
+                        `entry_${createdDate.toISOString()}.txt`,
                         entry.entry,
                       );
                       setOpened((o) => !o);
                     }}
                     size={"xs"}
-                    title={"Delete Entry"}
+                    title={"Download Entry"}
                   >
                     <IconDownload />
                   </ActionIcon>

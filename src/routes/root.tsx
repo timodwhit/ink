@@ -6,6 +6,7 @@ import {
   NavLink as RouterNavLink,
   redirect,
   useLoaderData,
+  Navigate,
 } from "react-router-dom";
 import "@mantine/core/styles.css";
 import "@mantine/code-highlight/styles.css";
@@ -18,9 +19,7 @@ import {
   ColorSchemeScript,
   Flex,
   Group,
-  MantineProvider,
   NavLink,
-  createTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -28,6 +27,7 @@ import {
   IconBook,
   IconPlus,
   IconSettings,
+  IconLogout,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import DarkModeToggle from "../components/DarkModeToggle.tsx";
@@ -47,39 +47,53 @@ import Journal, {
   entryDeleteAction,
   journalDeleteAction,
 } from "./journal.tsx";
-
-const theme = createTheme({
-  primaryColor: "gray",
-  colors: {
-    gray: [
-      "#f8f9fa",
-      "#f1f3f5",
-      "#e9ecef",
-      "#dee2e6",
-      "#ced4da",
-      "#adb5bd",
-      "#868e96",
-      "#495057",
-      "#343a40",
-      "#212529",
-    ],
-  },
-});
+import Login from "./login.tsx";
+import Signup from "./signup.tsx";
+import { useAuth } from "../contexts/AuthContext.tsx";
 
 export type RootLoaderData = {
   journals: IJournal[];
 };
 
-async function loader(): Promise<RootLoaderData> {
-  const journals = await getJournals();
+async function loader({ request }: ActionFunctionArgs): Promise<RootLoaderData> {
+  const url = new URL(request.url);
+  const isAuthRoute = url.pathname === '/login' || url.pathname === '/signup';
+
+  // Check if user is authenticated
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser && !isAuthRoute) {
+    throw redirect('/login');
+  }
+
+  if (isAuthRoute) {
+    return { journals: [] };
+  }
+
+  const user = JSON.parse(storedUser!);
+  const journals = await getJournals(user.id);
   return { journals };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const name = formData.get("name") as string;
-  const journal = await createJournal(name, "small");
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) {
+    throw redirect('/login');
+  }
+  const user = JSON.parse(storedUser);
+  const journal = await createJournal(name, "small", user.id);
   return redirect(`journal/${journal.id}`);
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
 }
 
 export const route: RouteObject = {
@@ -89,7 +103,19 @@ export const route: RouteObject = {
   loader,
   action,
   children: [
-    { index: true, element: <Index />, loader },
+    {
+      index: true,
+      element: <ProtectedRoute><Index /></ProtectedRoute>,
+      loader
+    },
+    {
+      path: "login",
+      element: <Login />,
+    },
+    {
+      path: "signup",
+      element: <Signup />,
+    },
     {
       errorElement: <ErrorPage />,
       children: [
@@ -97,7 +123,7 @@ export const route: RouteObject = {
           path: "journal/:journalId",
           action: journalRootAction,
           loader: journalRootLoader,
-          element: <Journal />,
+          element: <ProtectedRoute><Journal /></ProtectedRoute>,
         },
         {
           path: "journal/:journalId/edit",
@@ -128,12 +154,17 @@ function Root() {
   const [opened, { toggle: toggleMenu, close: closeMenu }] = useDisclosure();
   const [activeJournal, setActiveJournal] = useState<IJournal | null>(null);
   const { journals } = useLoaderData() as RootLoaderData;
+  const { user, logout } = useAuth();
+
+  if (!user) {
+    return <Outlet />;
+  }
 
   const items = journals.map((item) => (
     <Flex key={item.id} align={"center"}>
       <NavLink
         label={item.name}
-        description={item.created_date.toLocaleDateString()}
+        description={new Date(item.created_date).toLocaleDateString()}
         leftSection={<IconBook />}
         variant={"subtle"}
         onClick={closeMenu}
@@ -153,50 +184,58 @@ function Root() {
       </ActionIcon>
     </Flex>
   ));
+
   return (
     <>
       <ColorSchemeScript defaultColorScheme="auto" />
-      <MantineProvider defaultColorScheme="auto" theme={theme}>
-        <AppShell
-          header={{ height: 60 }}
-          navbar={{
-            width: 300,
-            breakpoint: "sm",
-            collapsed: { mobile: !opened, desktop: !opened },
-          }}
-          padding="md"
-        >
-          <AppShell.Header>
-            <Group justify="space-between" h={"var(--app-shell-header-height)"}>
-              <Box w={"2rem"}>
-                <Burger opened={opened} onClick={toggleMenu} size="sm" />
-              </Box>
-              <Anchor component={Link} to={"/"} onClick={closeMenu}>
-                <IconBallpenFilled />
-              </Anchor>
+      <AppShell
+        header={{ height: 60 }}
+        navbar={{
+          width: 300,
+          breakpoint: "sm",
+          collapsed: { mobile: !opened, desktop: !opened },
+        }}
+        padding="md"
+      >
+        <AppShell.Header>
+          <Group justify="space-between" h={"var(--app-shell-header-height)"}>
+            <Box w={"2rem"}>
+              <Burger opened={opened} onClick={toggleMenu} size="sm" />
+            </Box>
+            <Anchor component={Link} to={"/"} onClick={closeMenu}>
+              <IconBallpenFilled />
+            </Anchor>
+            <Group>
               <DarkModeToggle />
+              <ActionIcon
+                variant="subtle"
+                aria-label="Logout"
+                onClick={logout}
+              >
+                <IconLogout />
+              </ActionIcon>
             </Group>
-          </AppShell.Header>
-          <AppShell.Navbar p="md" style={{ overflowY: "auto" }}>
-            <NavLink
-              label={"Create New Journal"}
-              leftSection={<IconPlus />}
-              variant={"subtle"}
-              onClick={openJournalEdits}
-            />
-            {items}
-          </AppShell.Navbar>
-          <AppShell.Main>
-            <Outlet />
-          </AppShell.Main>
-          <JournalEditModals
-            opened={openedJournalEdits}
-            close={closeJournalEdits}
-            journal={activeJournal}
-            setJournal={setActiveJournal}
+          </Group>
+        </AppShell.Header>
+        <AppShell.Navbar p="md" style={{ overflowY: "auto" }}>
+          <NavLink
+            label={"Create New Journal"}
+            leftSection={<IconPlus />}
+            variant={"subtle"}
+            onClick={openJournalEdits}
           />
-        </AppShell>
-      </MantineProvider>
+          {items}
+        </AppShell.Navbar>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+        <JournalEditModals
+          opened={openedJournalEdits}
+          close={closeJournalEdits}
+          journal={activeJournal}
+          setJournal={setActiveJournal}
+        />
+      </AppShell>
     </>
   );
 }
