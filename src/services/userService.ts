@@ -10,7 +10,7 @@ export interface CreateUserInput {
 export interface UserResponse {
   id: string;
   email: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export const userService = {

@@ -74,7 +74,7 @@ export async function journalEditAction({
   params,
 }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const name = formData.get("name");
+  const name = formData.get("name") as string;
   if (request.method === "PATCH" && params.journalId) {
     await updateJournal(params.journalId, { name });
     return redirect(`/journal/${params.journalId}`);
@@ -92,7 +92,7 @@ export async function journalDeleteAction({
 
 export async function entryEditAction({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const entry = formData.get("entry");
+  const entry = formData.get("entry") as string;
   if (params.entryId) {
     await updateEntry(params.entryId, { entry });
     return { saved: true };

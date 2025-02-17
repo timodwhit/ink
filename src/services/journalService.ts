@@ -69,8 +69,7 @@ export const journalService = {
   async updateJournal(id: string, updates: UpdateJournalInput) {
     if (!updates.name && !updates.size) return null;
 
-    const setClauses = [];
-    const values = [];
+    const setClauses: string[] = [];
 
     if (updates.name) {
       setClauses.push('name = ${updates.name}');
