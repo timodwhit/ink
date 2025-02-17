@@ -207,13 +207,6 @@ function Root() {
             </Anchor>
             <Group>
               <DarkModeToggle />
-              <ActionIcon
-                variant="subtle"
-                aria-label="Logout"
-                onClick={logout}
-              >
-                <IconLogout />
-              </ActionIcon>
             </Group>
           </Group>
         </AppShell.Header>
@@ -225,6 +218,14 @@ function Root() {
             onClick={openJournalEdits}
           />
           {items}
+          <Box style={{ marginTop: 'auto' }}>
+            <NavLink
+              label="Logout"
+              leftSection={<IconLogout />}
+              variant="subtle"
+              onClick={logout}
+            />
+          </Box>
         </AppShell.Navbar>
         <AppShell.Main>
           <Outlet />
